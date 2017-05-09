@@ -1,0 +1,79 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "tJLFSeWyXG8RWcdQ3oNtI7meD3c=",
+			"path": "github.com/gonum/blas",
+			"revision": "430a98d0f42f5d7b9a9535580771233386034848",
+			"revisionTime": "2017-03-28T20:39:10Z"
+		},
+		{
+			"checksumSHA1": "Hc4+U8HpN0345fLzyzrxlqYBBMs=",
+			"path": "github.com/gonum/blas/blas64",
+			"revision": "430a98d0f42f5d7b9a9535580771233386034848",
+			"revisionTime": "2017-03-28T20:39:10Z"
+		},
+		{
+			"checksumSHA1": "KIDU5FFtgLLhyGMksRcNmaQ1m5E=",
+			"path": "github.com/gonum/blas/native",
+			"revision": "430a98d0f42f5d7b9a9535580771233386034848",
+			"revisionTime": "2017-03-28T20:39:10Z"
+		},
+		{
+			"checksumSHA1": "4URlS0sh4+VMLN6iDIYdt0JfpFg=",
+			"path": "github.com/gonum/blas/native/internal/math32",
+			"revision": "430a98d0f42f5d7b9a9535580771233386034848",
+			"revisionTime": "2017-03-28T20:39:10Z"
+		},
+		{
+			"checksumSHA1": "EhncFKKOt0T5oORInPdxj6rHXr0=",
+			"path": "github.com/gonum/floats",
+			"revision": "a2cbc5c70616cd18491ef2843231f6ce28b2cb02",
+			"revisionTime": "2017-02-05T03:04:20Z"
+		},
+		{
+			"checksumSHA1": "vqq3S6LXgLZL9DqFe456yHyqqP4=",
+			"path": "github.com/gonum/internal/asm/f32",
+			"revision": "abbe1115275b8ef5f1c4b73e2360c9e8177edcb2",
+			"revisionTime": "2017-04-30T06:37:44Z"
+		},
+		{
+			"checksumSHA1": "xq5Io7FNpC8EGW05BdKBaEXjk0k=",
+			"path": "github.com/gonum/internal/asm/f64",
+			"revision": "abbe1115275b8ef5f1c4b73e2360c9e8177edcb2",
+			"revisionTime": "2017-04-30T06:37:44Z"
+		},
+		{
+			"checksumSHA1": "DQDcP3ctyu/Q1vnXUNH7t9hfVMI=",
+			"path": "github.com/gonum/lapack",
+			"revision": "b2c45d0a904f3d18ef419fd1c65c22f3749046fe",
+			"revisionTime": "2017-04-25T22:23:37Z"
+		},
+		{
+			"checksumSHA1": "spB0w4NXAqaMj2c7S7oMmPWyWk8=",
+			"path": "github.com/gonum/lapack/lapack64",
+			"revision": "b2c45d0a904f3d18ef419fd1c65c22f3749046fe",
+			"revisionTime": "2017-04-25T22:23:37Z"
+		},
+		{
+			"checksumSHA1": "pvH/7uIoA/RiZAWeKQ69eg1dlY0=",
+			"path": "github.com/gonum/lapack/native",
+			"revision": "b2c45d0a904f3d18ef419fd1c65c22f3749046fe",
+			"revisionTime": "2017-04-25T22:23:37Z"
+		},
+		{
+			"checksumSHA1": "czw6uqlaggXKLtU8O0JHD2zw3Dg=",
+			"path": "github.com/gonum/matrix",
+			"revision": "496fef53954ba166f5dbc5bbbf90b433c130cfb1",
+			"revisionTime": "2017-04-20T07:03:06Z"
+		},
+		{
+			"checksumSHA1": "ps1UzzLaV2+k5x2gGqz+FuSX0D0=",
+			"path": "github.com/gonum/matrix/mat64",
+			"revision": "496fef53954ba166f5dbc5bbbf90b433c130cfb1",
+			"revisionTime": "2017-04-20T07:03:06Z"
+		}
+	],
+	"rootPath": "github.com/echojc/als-slice"
+}
