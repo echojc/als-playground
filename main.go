@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/gonum/matrix/mat64"
@@ -23,13 +24,20 @@ func main() {
 			}
 		}
 	}
+	//r := [][]float64{
+	//	[]float64{5, 3, 0, 1},
+	//	[]float64{4, 0, 0, 1},
+	//	[]float64{1, 1, 0, 5},
+	//	[]float64{1, 0, 0, 4},
+	//	[]float64{0, 1, 5, 4},
+	//}
 
 	// should be strictly less than min(columns, rows)
 	features := 2
 	// regularization parameter, should be small-ish
 	lambda := 0.1
 	// how many times to run the solver
-	iterations := 10000
+	iterations := 1000
 
 	start := time.Now()
 	p, q := factorize(r, features, lambda, iterations)
@@ -64,7 +72,7 @@ func factorize(r [][]float64, k int, lambda float64, count int) (p, q [][]float6
 	for i := range q {
 		q[i] = make([]float64, len(r[0]))
 		for j := range q[i] {
-			q[i][j] = rand.Float64()
+			q[i][j] = 2 //rand.Float64()
 		}
 	}
 
@@ -82,56 +90,22 @@ func factorize(r [][]float64, k int, lambda float64, count int) (p, q [][]float6
 }
 
 func solveP(p, q, r [][]float64) {
-	λ := 0.1
-	k := len(p) // or len(q)
-
 	// each loop can be calculated independently
+	wg := &sync.WaitGroup{}
+	wg.Add(len(p[0]))
 	for pj := range p[0] {
-		// Q^T x w_i x Q + λI
-		// k by k
-		f := make([]float64, k*k)
-		for i := 0; i < k; i++ {
-			for j := 0; j < k; j++ {
-				var t float64
-				for a := range q[i] {
-					if r[pj][a] > 0 {
-						t += q[i][a] * q[j][a]
-					}
-				}
-				// regularization
-				if i == j {
-					t += λ
-				}
-				// write into matrix
-				f[j*k+i] = t
-			}
-		}
-
-		// Q^T x w_i x r_i
-		// k by 1
-		s := make([]float64, k)
-		for i := 0; i < k; i++ {
-			var t float64
-			for a := range q[i] {
-				if r[pj][a] > 0 {
-					t += q[i][a] * r[pj][a]
-				}
-			}
-			s[i] = t
-		}
-
-		v := make([]float64, k)
-		mat64.NewDense(k, 1, v).Solve(
-			mat64.NewDense(k, k, f),
-			mat64.NewDense(k, 1, s),
-		)
-		for i := 0; i < k; i++ {
-			p[i][pj] = v[i]
-		}
+		go func(pj int) {
+			solvePj(p, q, r[pj], pj)
+			wg.Done()
+		}(pj)
 	}
+	wg.Wait()
 }
 
 func solvePj(p, q [][]float64, rj []float64, pj int) {
+	λ := 0.1
+	k := len(p) // or len(q)
+
 	// Q^T x w_i x Q + λI
 	// k by k
 	f := make([]float64, k*k)
@@ -139,7 +113,7 @@ func solvePj(p, q [][]float64, rj []float64, pj int) {
 		for j := 0; j < k; j++ {
 			var t float64
 			for a := range q[i] {
-				if ri[a] > 0 {
+				if rj[a] > 0 {
 					t += q[i][a] * q[j][a]
 				}
 			}
