@@ -14,7 +14,7 @@ func init() {
 }
 
 func main() {
-	m, n := 1000, 100
+	m, n := 10000, 1000
 	r := make([][]float64, m)
 	for i := range r {
 		r[i] = make([]float64, n)
@@ -22,6 +22,9 @@ func main() {
 			if rand.Int()%2 == 0 {
 				r[i][j] = float64(rand.Intn(5) + 1)
 			}
+		}
+		if i%10000 == 0 {
+			fmt.Println(i)
 		}
 	}
 	//r := [][]float64{
@@ -33,11 +36,11 @@ func main() {
 	//}
 
 	// should be strictly less than min(columns, rows)
-	features := 20
+	features := 10
 	// regularization parameter, should be small-ish
 	lambda := 0.1
 	// how many times to run the solver
-	iterations := 30
+	iterations := 5
 
 	start := time.Now()
 	//p, q := factorize(r, features, lambda, iterations)
@@ -82,9 +85,31 @@ func factorize(r [][]float64, k int, lambda float64, count int) (p, q [][]float6
 		p[i] = make([]float64, len(r))
 	}
 
+	fmt.Println("transposing")
+
+	// transpose r so we have slices for solveQ
+	rt := make([][]float64, len(r[0]))
+	for i := range rt {
+		rt[i] = make([]float64, len(r))
+	}
+	for i := range r {
+		for j := range r[i] {
+			rt[j][i] = r[i][j]
+		}
+	}
+
+	fmt.Println("transposed")
+
 	for i := 0; i < count; i++ {
+		start := time.Now()
 		solveP(p, q, r)
-		solveQ(p, q, r)
+		end := time.Now()
+		fmt.Printf("\ni: %d p time: %dms\n", i, end.Sub(start)/time.Millisecond)
+
+		start = time.Now()
+		solveQ(p, q, rt)
+		end = time.Now()
+		fmt.Printf("\ni: %d p time: %dms\n", i, end.Sub(start)/time.Millisecond)
 	}
 
 	return
@@ -150,20 +175,8 @@ func solvePj(p, q [][]float64, rj []float64, pj int) {
 	}
 }
 
-func solveQ(p, q, r [][]float64) {
+func solveQ(p, q, rt [][]float64) {
 	// each loop can be calculated independently
-
-	// transpose r so we have slices for solveQj
-	rt := make([][]float64, len(r[0]))
-	for i := range rt {
-		rt[i] = make([]float64, len(r))
-	}
-	for i := range r {
-		for j := range r[i] {
-			rt[j][i] = r[i][j]
-		}
-	}
-
 	wg := &sync.WaitGroup{}
 	wg.Add(len(q[0]))
 	for qj := range q[0] {
