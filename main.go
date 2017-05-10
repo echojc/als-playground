@@ -104,7 +104,7 @@ func solveP(p, q, r [][]float64) {
 
 func solvePj(p, q [][]float64, rj []float64, pj int) {
 	λ := 0.1
-	k := len(p) // or len(q)
+	k := len(p)
 
 	// Q^T x w_i x Q + λI
 	// k by k
@@ -150,52 +150,62 @@ func solvePj(p, q [][]float64, rj []float64, pj int) {
 }
 
 func solveQ(p, q, r [][]float64) {
-	λ := 0.1
-	k := len(p) // or len(q)
-
 	// each loop can be calculated independently
+	wg := &sync.WaitGroup{}
+	wg.Add(len(q[0]))
 	for qj := range q[0] {
-		// P^T x w_j x P + λI
-		// k by k
-		f := make([]float64, k*k)
-		for i := 0; i < k; i++ {
-			for j := 0; j < k; j++ {
-				var t float64
-				for a := range p[i] {
-					if r[a][qj] > 0 {
-						t += p[i][a] * p[j][a]
-					}
-				}
-				// regularization
-				if i == j {
-					t += λ
-				}
-				// write into matrix
-				f[j*k+i] = t
-			}
-		}
+		go func(qj int) {
+			solveQj(p, q, r, qj)
+			wg.Done()
+		}(qj)
+	}
+	wg.Wait()
+}
 
-		// P^T x w_j x r_j
-		// k by 1
-		s := make([]float64, k)
-		for i := 0; i < k; i++ {
+func solveQj(p, q, r [][]float64, qj int) {
+	λ := 0.1
+	k := len(q)
+
+	// P^T x w_j x P + λI
+	// k by k
+	f := make([]float64, k*k)
+	for i := 0; i < k; i++ {
+		for j := 0; j < k; j++ {
 			var t float64
 			for a := range p[i] {
 				if r[a][qj] > 0 {
-					t += p[i][a] * r[a][qj]
+					t += p[i][a] * p[j][a]
 				}
 			}
-			s[i] = t
+			// regularization
+			if i == j {
+				t += λ
+			}
+			// write into matrix
+			f[j*k+i] = t
 		}
+	}
 
-		v := make([]float64, k)
-		mat64.NewDense(k, 1, v).Solve(
-			mat64.NewDense(k, k, f),
-			mat64.NewDense(k, 1, s),
-		)
-		for i := 0; i < k; i++ {
-			q[i][qj] = v[i]
+	// P^T x w_j x r_j
+	// k by 1
+	s := make([]float64, k)
+	for i := 0; i < k; i++ {
+		var t float64
+		for a := range p[i] {
+			if r[a][qj] > 0 {
+				t += p[i][a] * r[a][qj]
+			}
 		}
+		s[i] = t
+	}
+
+	v := make([]float64, k)
+	mat64.NewDense(k, 1, v).Solve(
+		mat64.NewDense(k, k, f),
+		mat64.NewDense(k, 1, s),
+	)
+	for i := 0; i < k; i++ {
+		q[i][qj] = v[i]
 	}
 }
 
