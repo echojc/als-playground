@@ -14,7 +14,7 @@ func init() {
 }
 
 func main() {
-	m, n := 1000, 10
+	m, n := 1000, 100
 	r := make([][]float64, m)
 	for i := range r {
 		r[i] = make([]float64, n)
@@ -33,27 +33,28 @@ func main() {
 	//}
 
 	// should be strictly less than min(columns, rows)
-	features := 2
+	features := 20
 	// regularization parameter, should be small-ish
 	lambda := 0.1
 	// how many times to run the solver
-	iterations := 1000
+	iterations := 30
 
 	start := time.Now()
-	p, q := factorize(r, features, lambda, iterations)
+	//p, q := factorize(r, features, lambda, iterations)
+	factorize(r, features, lambda, iterations)
 	end := time.Now()
 
 	// the original values are copied from here:
 	// http://www.quuxlabs.com/blog/2010/09/matrix-factorization-a-simple-tutorial-and-implementation-in-python/#basic-ideas
-	fmt.Println("original")
-	fmt.Printf("% v\n", mat64.Formatted(toDense(r)))
+	//fmt.Println("original")
+	//fmt.Printf("% v\n", mat64.Formatted(toDense(r)))
 
 	// the recommendations are similar in value to the result from the same source:
 	// http://www.quuxlabs.com/blog/2010/09/matrix-factorization-a-simple-tutorial-and-implementation-in-python/#implementation-in-python
-	fmt.Println("\nrecommendations")
-	out := mat64.NewDense(len(p[0]), len(q[0]), nil)
-	out.Mul(toDense(p).T(), toDense(q))
-	fmt.Printf("% .2f\n", mat64.Formatted(out, mat64.Squeeze()))
+	//fmt.Println("\nrecommendations")
+	//out := mat64.NewDense(len(p[0]), len(q[0]), nil)
+	//out.Mul(toDense(p).T(), toDense(q))
+	//fmt.Printf("% .2f\n", mat64.Formatted(out, mat64.Squeeze()))
 
 	// the feature matrices can be saved to recalculate recommendations
 	// but i think the recommendations matrix takes less space overall, so not sure if necessary
@@ -151,18 +152,30 @@ func solvePj(p, q [][]float64, rj []float64, pj int) {
 
 func solveQ(p, q, r [][]float64) {
 	// each loop can be calculated independently
+
+	// transpose r so we have slices for solveQj
+	rt := make([][]float64, len(r[0]))
+	for i := range rt {
+		rt[i] = make([]float64, len(r))
+	}
+	for i := range r {
+		for j := range r[i] {
+			rt[j][i] = r[i][j]
+		}
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(len(q[0]))
 	for qj := range q[0] {
 		go func(qj int) {
-			solveQj(p, q, r, qj)
+			solveQj(p, q, rt[qj], qj)
 			wg.Done()
 		}(qj)
 	}
 	wg.Wait()
 }
 
-func solveQj(p, q, r [][]float64, qj int) {
+func solveQj(p, q [][]float64, rj []float64, qj int) {
 	λ := 0.1
 	k := len(q)
 
@@ -173,7 +186,7 @@ func solveQj(p, q, r [][]float64, qj int) {
 		for j := 0; j < k; j++ {
 			var t float64
 			for a := range p[i] {
-				if r[a][qj] > 0 {
+				if rj[a] > 0 {
 					t += p[i][a] * p[j][a]
 				}
 			}
@@ -192,8 +205,8 @@ func solveQj(p, q, r [][]float64, qj int) {
 	for i := 0; i < k; i++ {
 		var t float64
 		for a := range p[i] {
-			if r[a][qj] > 0 {
-				t += p[i][a] * r[a][qj]
+			if rj[a] > 0 {
+				t += p[i][a] * rj[a]
 			}
 		}
 		s[i] = t
