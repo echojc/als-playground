@@ -135,34 +135,32 @@ func solvePj(p, q [][]float64, rj []float64, pj int) {
 	// Q^T x w_i x Q + λI
 	// k by k
 	f := make([]float64, k*k)
-	for i := 0; i < k; i++ {
-		for j := 0; j < k; j++ {
-			var t float64
-			for a := range q[i] {
-				if rj[a] > 0 {
-					t += q[i][a] * q[j][a]
-				}
-			}
-			// regularization
-			if i == j {
-				t += λ
-			}
-			// write into matrix
-			f[j*k+i] = t
-		}
-	}
 
 	// Q^T x w_i x r_i
 	// k by 1
 	s := make([]float64, k)
+
 	for i := 0; i < k; i++ {
-		var t float64
-		for a := range q[i] {
-			if rj[a] > 0 {
-				t += q[i][a] * rj[a]
+		var t2 float64
+		for j := 0; j < k; j++ {
+			var t1 float64
+			for a := range q[i] {
+				if rj[a] > 0 {
+					t1 += q[i][a] * q[j][a]
+
+					if j == 0 {
+						t2 += q[i][a] * rj[a]
+					}
+				}
 			}
+			// regularization
+			if i == j {
+				t1 += λ
+			}
+			// write into matrix
+			f[j*k+i] = t1
 		}
-		s[i] = t
+		s[i] = t2
 	}
 
 	v := make([]float64, k)
@@ -181,8 +179,8 @@ func solveQ(p, q, rt [][]float64) {
 	wg.Add(len(q[0]))
 	for qj := range q[0] {
 		go func(qj int) {
+			defer wg.Done()
 			solveQj(p, q, rt[qj], qj)
-			wg.Done()
 		}(qj)
 	}
 	wg.Wait()
@@ -195,34 +193,32 @@ func solveQj(p, q [][]float64, rj []float64, qj int) {
 	// P^T x w_j x P + λI
 	// k by k
 	f := make([]float64, k*k)
-	for i := 0; i < k; i++ {
-		for j := 0; j < k; j++ {
-			var t float64
-			for a := range p[i] {
-				if rj[a] > 0 {
-					t += p[i][a] * p[j][a]
-				}
-			}
-			// regularization
-			if i == j {
-				t += λ
-			}
-			// write into matrix
-			f[j*k+i] = t
-		}
-	}
 
 	// P^T x w_j x r_j
 	// k by 1
 	s := make([]float64, k)
+
 	for i := 0; i < k; i++ {
-		var t float64
-		for a := range p[i] {
-			if rj[a] > 0 {
-				t += p[i][a] * rj[a]
+		var t2 float64
+		for j := 0; j < k; j++ {
+			var t1 float64
+			for a := range p[i] {
+				if rj[a] > 0 {
+					t1 += p[i][a] * p[j][a]
+
+					if j == 0 {
+						t2 += p[i][a] * rj[a]
+					}
+				}
 			}
+			// regularization
+			if i == j {
+				t1 += λ
+			}
+			// write into matrix
+			f[j*k+i] = t1
 		}
-		s[i] = t
+		s[i] = t2
 	}
 
 	v := make([]float64, k)
